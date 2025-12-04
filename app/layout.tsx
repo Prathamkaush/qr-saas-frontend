@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "QR SaaS | Dashboard",
+  title: "Beam",
   description: "A professional QR Code SaaS platform.",
 };
 

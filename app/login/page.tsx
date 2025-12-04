@@ -29,11 +29,15 @@ export default function LoginPage() {
         password: password
       });
 
-      // 2. Save Token & User Info
-      // Adjust 'res.data.token' based on your exact Go JSON response
+      // 2. Save Token
       localStorage.setItem("token", res.data.token);
+
+      // 3. 🔥 FIX: Save User Data (Critical for Topbar to show name)
+      if (res.data.user) {
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+      }
       
-      // 3. Redirect
+      // 4. Redirect
       router.push("/dashboard");
 
     } catch (err: any) {
@@ -52,7 +56,7 @@ export default function LoginPage() {
       <div className="w-full md:w-1/2 flex flex-col justify-center px-10 md:px-20 z-10">
 
         <div className="mb-10">
-          <h1 className="text-4xl font-bold text-gray-900">Welcome back 👋</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Welcome to Beam 👋</h1>
           <p className="text-gray-500 mt-2">Login to continue to your dashboard</p>
         </div>
 
@@ -86,7 +90,7 @@ export default function LoginPage() {
           onClick={handleLogin}
           disabled={loading}
           className={`rounded-xl py-3 w-full font-semibold text-white transition 
-                     ${loading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
+                      ${loading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
         >
           {loading ? "Logging in..." : "Log In"}
         </button>

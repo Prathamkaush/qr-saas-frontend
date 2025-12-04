@@ -18,6 +18,7 @@ import {
   X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BeamLogo } from "@/components/ui/logo"; // Ensure you created this file in step 45
 
 // ----------------------------------------------------------------------
 // 1. MAIN DESKTOP SIDEBAR (Collapsible)
@@ -106,9 +107,15 @@ function SidebarContent({ collapsed }: { collapsed: boolean }) {
     <div className="flex flex-col h-full">
       {/* BRAND HEADER */}
       <div className={cn("h-16 flex items-center border-b", collapsed ? "justify-center px-0" : "px-6")}>
-        <div className="flex items-center gap-2 font-bold text-xl text-blue-600">
-          <QrCode className="fill-blue-600 text-white" size={collapsed ? 28 : 24} />
-          {!collapsed && <span>QR SaaS</span>}
+        <div className="flex items-center gap-3">
+          {/* 🔥 Use BeamLogo here */}
+          <BeamLogo size={collapsed ? 32 : 28} />
+          
+          {!collapsed && (
+            <span className="font-bold text-xl text-gray-900 tracking-tight">
+              Beam
+            </span>
+          )}
         </div>
       </div>
 
