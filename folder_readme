@@ -1,0 +1,29 @@
+frontend/
+ ├── app/
+ │    ├── dashboard/
+ │    │    ├── page.tsx
+ │    │    ├── qr/
+ │    │    ├── templates/
+ │    │    ├── analytics/
+ │    │    ├── billing/
+ │    │    └── settings/
+ │    ├── login/
+ │    ├── auth/callback/
+ │    ├── t/[id]/page.tsx        (PUBLIC TEMPLATE VIEW PAGE)
+ │    └── layout.tsx
+ ├── components/
+ │    ├── ui/                    (ShadCN UI)
+ │    ├── qr-editor/
+ │    ├── template-builder/
+ │    ├── charts/
+ │    └── navigation/
+ ├── lib/
+ │    ├── api.ts                (Go backend client)
+ │    ├── auth.ts
+ │    └── utils.ts
+ ├── public/
+ │    ├── templates/
+ │    └── brand/
+ ├── styles/
+ ├── .env.local
+ └── package.json
