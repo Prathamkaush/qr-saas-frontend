@@ -127,7 +127,6 @@ export default function DashboardPage() {
   );
 }
 
-// ... (Keep StatsCard, CreateShortcut, DeviceRow, RecentQRCard exactly as they were) ...
 // --- SUB COMPONENTS ---
 
 function StatsCard({ title, value, icon }: any) {
@@ -149,7 +148,8 @@ function CreateShortcut({ label, icon, href }: any) {
     <Link href={href}>
       <div className="flex flex-col items-center justify-center p-6 bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group">
         <div className="mb-3 p-3 bg-gray-50 rounded-full group-hover:bg-blue-50 transition-colors">
-           {React.cloneElement(icon as React.ReactElement, { size: 24 })}
+           {/* 🔥 FIX: Explicitly cast to ReactElement<any> to allow 'size' prop */}
+           {React.cloneElement(icon as React.ReactElement<any>, { size: 24 })}
         </div>
         <div className="text-sm font-semibold text-gray-700 group-hover:text-blue-600">{label}</div>
       </div>

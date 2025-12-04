@@ -32,12 +32,14 @@ export default function StepDesign({ design, setDesign, content, onNext, onBack 
             <ColorPicker 
               label="Foreground" 
               value={design.color} 
-              onChange={(v) => update("color", v)} 
+              // 🔥 FIX: Added type (v: string)
+              onChange={(v: string) => update("color", v)} 
             />
             <ColorPicker 
               label="Background" 
               value={design.bgColor} 
-              onChange={(v) => update("bgColor", v)} 
+              // 🔥 FIX: Added type (v: string)
+              onChange={(v: string) => update("bgColor", v)} 
             />
           </div>
         </DesignSection>
@@ -121,19 +123,21 @@ export default function StepDesign({ design, setDesign, content, onNext, onBack 
                         value={design.frameText} 
                         onChange={(e) => update("frameText", e.target.value)} 
                         maxLength={20}
-                        className="h-11" // Taller input for mobile
+                        className="h-11" 
                       />
                    </div>
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <ColorPicker 
                         label="Frame Color" 
                         value={design.frameColor || "#000000"} 
-                        onChange={(v) => update("frameColor", v)} 
+                        // 🔥 FIX: Added type (v: string)
+                        onChange={(v: string) => update("frameColor", v)} 
                       />
                       <ColorPicker 
                         label="Text Color" 
                         value={design.frameTextColor || "#ffffff"} 
-                        onChange={(v) => update("frameTextColor", v)} 
+                        // 🔥 FIX: Added type (v: string)
+                        onChange={(v: string) => update("frameTextColor", v)} 
                       />
                    </div>
                 </div>
@@ -157,7 +161,6 @@ export default function StepDesign({ design, setDesign, content, onNext, onBack 
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
          <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white border rounded shadow-sm overflow-hidden p-1">
-                {/* Mini Preview Icon */}
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center text-[8px] text-gray-400">
                     QR
                 </div>
