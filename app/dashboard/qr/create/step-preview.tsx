@@ -44,8 +44,8 @@ export default function StepPreview({ qrType, content, design, onBack }: any) {
         qr_type: qrType,
         target_url: qrType === "url" 
           ? (content.url?.startsWith("http") ? content.url : `https://${content.url}`) 
-          : "https://example.com",
-        static_data: buildContent(), 
+          : buildContent(), // <--- THIS WAS "https://example.com" BEFORE
+        
         design: design,
       };
 
