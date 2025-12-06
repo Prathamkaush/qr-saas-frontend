@@ -2,12 +2,7 @@
 
 import { useRef, useState } from "react";
 import LiveQRCode from "@/components/qr/live-qr-code";
-import { 
-  Download, 
-  Save, 
-  CheckCircle, 
-  AlertCircle, 
-} from "lucide-react";
+import { Download, Save, CheckCircle, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function StepPreview({ qrType, content, design, onBack }: any) {
@@ -19,8 +14,17 @@ export default function StepPreview({ qrType, content, design, onBack }: any) {
   const [error, setError] = useState("");
   const [format, setFormat] = useState("png");
 
-  // 🔥 FIX 1: Use Dynamic API URL
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+
+  // Helper: Convert File to Base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
 
   const buildContent = () => {
     switch (qrType) {
@@ -39,17 +43,28 @@ export default function StepPreview({ qrType, content, design, onBack }: any) {
     try {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
 
+      // ---------------------------------------------------------
+      // 🔥 FIX: Prepare Design with Base64 Logo
+      // ---------------------------------------------------------
+      let designForDb = { ...design };
+      
+      if (design.logo instanceof File) {
+          // Convert File -> Base64 String
+          const base64Logo = await fileToBase64(design.logo);
+          designForDb.logo = base64Logo;
+      }
+
       const payload = {
         name: content.name || `${qrType.toUpperCase()} QR`,
         qr_type: qrType,
         target_url: qrType === "url" 
           ? (content.url?.startsWith("http") ? content.url : `https://${content.url}`) 
-          : buildContent(), // <--- THIS WAS "https://example.com" BEFORE
+          : buildContent(),
         
-        design: design,
+        // Send the processed design object
+        design: designForDb, 
       };
 
-      // 🔥 FIX 2: Use API_URL Variable
       const res = await fetch(`${API_URL}/qr/dynamic/url`, {
         method: "POST",
         headers: {
@@ -84,9 +99,8 @@ export default function StepPreview({ qrType, content, design, onBack }: any) {
         </div>
         <h2 className="text-3xl font-bold text-gray-900">QR Code Created!</h2>
         <p className="text-gray-500 mt-2 mb-8 max-w-md">
-          Your QR code has been saved to your dashboard. You can now download it or track its performance.
+          Your QR code has been saved to your dashboard.
         </p>
-        
         <div className="flex gap-4">
           <button 
             onClick={() => router.push("/dashboard/qr")}
@@ -107,8 +121,6 @@ export default function StepPreview({ qrType, content, design, onBack }: any) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
-      {/* LEFT: VISUAL PREVIEW */}
       <div className="flex flex-col items-center justify-center">
         <div className="relative group">
            <div className="bg-white p-8 rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-gray-100">
@@ -121,22 +133,17 @@ export default function StepPreview({ qrType, content, design, onBack }: any) {
         <p className="mt-8 text-sm text-gray-400">Scan to test before saving</p>
       </div>
 
-      {/* RIGHT: DETAILS & ACTIONS */}
       <div className="flex flex-col justify-center space-y-8">
-        
         <div>
            <h2 className="text-2xl font-bold text-gray-900">Final Review</h2>
            <p className="text-gray-500">Review your settings and save your QR Code.</p>
         </div>
 
+        {/* Summary Card */}
         <div className="bg-gray-50 rounded-xl p-5 border space-y-3">
            <div className="flex justify-between text-sm">
               <span className="text-gray-500">Type</span>
               <span className="font-semibold uppercase">{qrType}</span>
-           </div>
-           <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Content</span>
-              <span className="font-medium truncate max-w-[200px]">{buildContent()}</span>
            </div>
            <div className="flex justify-between text-sm">
               <span className="text-gray-500">Colors</span>
@@ -144,6 +151,10 @@ export default function StepPreview({ qrType, content, design, onBack }: any) {
                  <div className="w-4 h-4 rounded-full border" style={{background: design.color}}></div>
                  <div className="w-4 h-4 rounded-full border" style={{background: design.bgColor}}></div>
               </div>
+           </div>
+           <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Logo</span>
+              <span className="font-medium">{design.logo ? "Yes" : "No"}</span>
            </div>
         </div>
 
@@ -158,48 +169,15 @@ export default function StepPreview({ qrType, content, design, onBack }: any) {
         )}
 
         <div className="space-y-4 pt-4 border-t">
-           <div className="flex gap-3">
-              <select 
-                value={format} 
-                onChange={(e) => setFormat(e.target.value)}
-                className="bg-white border rounded-lg px-3 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                 <option value="png">PNG</option>
-                 <option value="svg">SVG</option>
-                 <option value="jpeg">JPEG</option>
-              </select>
-              <button 
-                onClick={handleDownload}
-                className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-lg font-medium transition"
-              >
-                 <Download size={18} />
-                 Download File
-              </button>
-           </div>
-
            <button
              onClick={handleSave}
              disabled={loading}
              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3.5 rounded-xl font-bold shadow-lg shadow-blue-200 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
            >
-             {loading ? (
-                <>Saving to Dashboard...</>
-             ) : (
-                <>
-                   <Save size={20} />
-                   Save to Dashboard
-                </>
-             )}
+             {loading ? "Saving to Dashboard..." : <><Save size={20} /> Save to Dashboard</>}
            </button>
-
-           <button 
-             onClick={onBack}
-             className="w-full text-gray-500 text-sm hover:text-gray-800 transition py-2"
-           >
-             Back to Design
-           </button>
+           <button onClick={onBack} className="w-full text-gray-500 text-sm hover:text-gray-800 transition py-2">Back to Design</button>
         </div>
-
       </div>
     </div>
   );
