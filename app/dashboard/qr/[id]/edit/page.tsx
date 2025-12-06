@@ -59,43 +59,64 @@ export default function EditQRPage() {
     if (id) fetchQR();
   }, [id]);
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const token = localStorage.getItem("token");
+const handleSave = async () => {
+  setSaving(true);
+  try {
+    const token = localStorage.getItem("token");
 
-      const targetUrl =
-        qrType === "url"
-          ? content.url
-          : qrType === "text"
-          ? content.text
-          : content.url;
-
-      const payload = {
-        name: content.name,
-        qr_type: qrType,
-        target_url: targetUrl,
-        design: design,
-      };
-
-      const res = await fetch(`${API_URL}/qr/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+    // Convert file -> base64
+    const fileToBase64 = (file: File) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
       });
 
-      if (res.ok) router.push("/dashboard/qr");
-      else alert("Failed to update.");
-    } catch (e) {
-      console.error(e);
-      alert("Error saving changes.");
-    } finally {
-      setSaving(false);
+    // Determine target URL based on type
+    const targetUrl =
+      qrType === "url"
+        ? content.url
+        : qrType === "text"
+        ? content.text
+        : content.url;
+
+    // Prepare design object
+    let finalDesign = { ...design };
+    if (design.logo instanceof File) {
+      finalDesign.logo = await fileToBase64(design.logo);
     }
-  };
+
+    const payload = {
+      name: content.name,
+      target_url: targetUrl,
+      design: finalDesign,
+    };
+
+    const res = await fetch(`${API_URL}/qr/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error("Update error:", err);
+      alert("Failed to update");
+    } else {
+      router.push("/dashboard/qr");
+    }
+  } catch (e) {
+    console.error(e);
+    alert("Error saving changes");
+  } finally {
+    setSaving(false);
+  }
+};
+
 
   const computedContent =
     qrType === "url"
