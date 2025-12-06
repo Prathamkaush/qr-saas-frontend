@@ -24,7 +24,7 @@ export default function StepContent({
     if (qrType === "url") return content.url?.length > 3;
     if (qrType === "text") return content.text?.length > 0;
     if (qrType === "wifi") return content.ssid?.length > 0;
-    if (qrType === "vcard") return content.name?.length > 0; // Name is built-in for vCard
+    if (qrType === "vcard") return content.name?.length > 0; // vCard requires Name
     if (qrType === "pdf") return content.file !== null;
     return true;
   };
@@ -39,21 +39,22 @@ export default function StepContent({
         </p>
       </div>
 
-      {/* 🔥 FIX: Generic Name Input (For URL, WiFi, PDF, Text) */}
-      {/* We hide this for vCard because vCard already has a "Full Name" field */}
+      {/* ----------------- NAME INPUT (For Dashboard Organization) ----------------- */}
+      {/* We show this for everything EXCEPT vCard (since vCard has its own Name field) */}
       {qrType !== "vcard" && (
-        <div className="space-y-3">
-           <Label htmlFor="qrName">QR Name (Optional)</Label>
+        <div className="space-y-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+           <Label htmlFor="qrName" className="text-gray-700 font-semibold">Name your QR Code</Label>
            <div className="relative">
               <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <Input 
                 id="qrName"
                 placeholder="e.g. Summer Campaign, Office WiFi"
-                className="pl-10 h-11 transition-all focus-visible:ring-blue-500"
+                className="pl-10 h-11 bg-white transition-all focus-visible:ring-blue-500"
                 value={content.name || ""}
                 onChange={(e) => update("name", e.target.value)}
               />
            </div>
+           <p className="text-xs text-gray-400">This helps you find it in your dashboard later.</p>
         </div>
       )}
 
@@ -66,7 +67,7 @@ export default function StepContent({
             <Input
               id="url"
               placeholder="https://yourwebsite.com"
-              className="pl-10 h-11 sm:h-12 text-base"
+              className="pl-10 h-12 text-base"
               value={content.url || ""}
               onChange={(e) => update("url", e.target.value)}
             />
@@ -95,8 +96,8 @@ export default function StepContent({
       {/* ----------------- VCARD INPUT ----------------- */}
       {qrType === "vcard" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-          <div className="space-y-2 col-span-1">
-            <Label>Full Name</Label>
+          <div className="space-y-2 col-span-1 sm:col-span-2">
+            <Label>Full Name <span className="text-red-500">*</span></Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <Input
@@ -107,7 +108,7 @@ export default function StepContent({
               />
             </div>
           </div>
-          {/* ... keep other vcard inputs ... */}
+
           <div className="space-y-2 col-span-1">
             <Label>Phone Number</Label>
             <div className="relative">
@@ -120,6 +121,7 @@ export default function StepContent({
               />
             </div>
           </div>
+
           <div className="space-y-2 col-span-1">
              <Label>Company</Label>
              <div className="relative">
@@ -127,8 +129,9 @@ export default function StepContent({
                <Input placeholder="Acme Inc." className="pl-10 h-11" value={content.company || ""} onChange={(e) => update("company", e.target.value)} />
              </div>
           </div>
-          <div className="space-y-2 col-span-1">
-             <Label>Email</Label>
+
+          <div className="space-y-2 col-span-1 sm:col-span-2">
+             <Label>Email Address</Label>
              <div className="relative">
                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                <Input placeholder="john@example.com" className="pl-10 h-11" value={content.email || ""} onChange={(e) => update("email", e.target.value)} />
@@ -190,6 +193,7 @@ export default function StepContent({
                     <div className="text-center text-gray-500 p-4">
                         <UploadCloud size={40} className="mx-auto mb-2" />
                         <p className="font-semibold text-sm">Click to upload PDF</p>
+                        <p className="text-xs opacity-70">Max 10MB</p>
                     </div>
                 )}
              </label>
@@ -200,7 +204,13 @@ export default function StepContent({
       {/* Footer Actions */}
       <div className="flex justify-between pt-6 mt-6 border-t">
         <button onClick={onBack} className="px-6 py-2.5 rounded-lg border border-gray-300 hover:bg-gray-50">Back</button>
-        <button onClick={onNext} disabled={!isValid()} className={`px-8 py-2.5 rounded-lg text-white ${isValid() ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-200 cursor-not-allowed"}`}>Continue</button>
+        <button 
+            onClick={onNext} 
+            disabled={!isValid()} 
+            className={`px-8 py-2.5 rounded-lg text-white shadow-sm transition-all ${isValid() ? "bg-blue-600 hover:bg-blue-700 hover:shadow-md" : "bg-gray-200 cursor-not-allowed"}`}
+        >
+            Continue
+        </button>
       </div>
     </div>
   );
