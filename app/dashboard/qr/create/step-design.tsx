@@ -32,13 +32,13 @@ export default function StepDesign({ design, setDesign, content, onNext, onBack 
             <ColorPicker 
               label="Foreground" 
               value={design.color} 
-              // 🔥 FIX: Added type (v: string)
+              // 🔥 FIX: Explicitly typed 'v' as string
               onChange={(v: string) => update("color", v)} 
             />
             <ColorPicker 
               label="Background" 
               value={design.bgColor} 
-              // 🔥 FIX: Added type (v: string)
+              // 🔥 FIX: Explicitly typed 'v' as string
               onChange={(v: string) => update("bgColor", v)} 
             />
           </div>
@@ -130,13 +130,13 @@ export default function StepDesign({ design, setDesign, content, onNext, onBack 
                       <ColorPicker 
                         label="Frame Color" 
                         value={design.frameColor || "#000000"} 
-                        // 🔥 FIX: Added type (v: string)
+                        // 🔥 FIX: Explicitly typed 'v' as string
                         onChange={(v: string) => update("frameColor", v)} 
                       />
                       <ColorPicker 
                         label="Text Color" 
                         value={design.frameTextColor || "#ffffff"} 
-                        // 🔥 FIX: Added type (v: string)
+                        // 🔥 FIX: Explicitly typed 'v' as string
                         onChange={(v: string) => update("frameTextColor", v)} 
                       />
                    </div>
