@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BarChart2, FileText, Wifi, User, Link as LinkIcon, File } from "lucide-react"; 
-import AuthImage from "@/components/ui/auth-image";
+import LiveQRCode from "@/components/qr/live-qr-code"; // 🔥 Switch to Live Renderer for correct styles
 
 interface QRCardProps {
   qr: any;
@@ -15,14 +15,28 @@ export default function QRCard({ qr, onClick }: QRCardProps) {
 
   // Use Dynamic API URL
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-  const imageUrl = `${API_URL}/qr/${qr.id}/image`;
 
-  // 🔥 FIX: Fetch Real-Time Scan Count on Mount
+  // 🔥 FIX 1: Construct Tracking URL for the QR Image
+  // We need the backend root (without /api) to form the redirect link
+  const backendBase = API_URL.replace(/\/api$/, ""); 
+  const trackingUrl = `${backendBase}/r/${qr.short_code}`;
+
+  // 🔥 FIX 2: Parse the Design JSON
+  // This restores your Dots, Eyes, and Logo on the dashboard card
+  let design = { color: "#000000", bgColor: "#ffffff", dotShape: "square", eyeShape: "square" };
+  try {
+    if (qr.design_json) {
+        design = JSON.parse(qr.design_json);
+    }
+  } catch (e) {
+    // Fallback to default if JSON is invalid
+  }
+
+  // 🔥 FIX 3: Fetch Real-Time Stats
   useEffect(() => {
     async function fetchFreshStats() {
       try {
         const token = localStorage.getItem("token");
-        // Call the analytics endpoint for this specific QR code
         const res = await fetch(`${API_URL}/analytics/${qr.id}/summary`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -39,7 +53,7 @@ export default function QRCard({ qr, onClick }: QRCardProps) {
       }
     }
 
-    fetchFreshStats();
+    if (qr.id) fetchFreshStats();
   }, [qr.id, API_URL]);
 
   // Smart Content Display
@@ -69,17 +83,18 @@ export default function QRCard({ qr, onClick }: QRCardProps) {
       onClick={onClick}
       className="group bg-white border rounded-xl p-4 shadow-sm hover:shadow-lg hover:border-blue-300 transition-all cursor-pointer relative flex flex-col h-full"
     >
-      {/* Image Area */}
+      {/* Image Area - Now uses LiveQRCode to match your design */}
       <div className="flex justify-center h-40 w-full mb-4 bg-gray-50 rounded-lg items-center overflow-hidden relative">
-         <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase tracking-wide">
+         <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase tracking-wide z-10">
             Dynamic
          </div>
          
         <div className="w-28 h-28 transition-transform duration-300 group-hover:scale-110">
-            <AuthImage
-                src={imageUrl}
-                alt="QR Code"
-                className="w-full h-full object-contain mix-blend-multiply"
+            {/* 🔥 RENDER ON CLIENT to show Shapes/Logos */}
+            <LiveQRCode 
+                content={trackingUrl} 
+                design={design} 
+                watermark={false} // No watermark on dashboard thumbnails
             />
         </div>
       </div>
@@ -106,7 +121,7 @@ export default function QRCard({ qr, onClick }: QRCardProps) {
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
         <div className="flex items-center gap-1.5 text-xs text-gray-500">
             <BarChart2 size={14} className="text-blue-500" />
-            {/* 🔥 Display the fetched scanCount state */}
+            {/* Display the live fetched count */}
             <span className="font-medium text-gray-900">{scanCount}</span> <span className="text-gray-400">Scans</span>
         </div>
         <div className="text-xs text-blue-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">

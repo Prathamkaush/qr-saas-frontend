@@ -8,22 +8,26 @@ import {
   Palette, Upload, Frame, Grid, Eye, ChevronDown, ChevronUp 
 } from "lucide-react";
 
-export default function StepDesign({ design, setDesign, content, onNext, onBack }: any) {
+export default function StepDesign({ design, setDesign, content, onNext, onBack, isEditMode = false }: any) {
   
   const update = (field: string, value: any) => {
     setDesign({ ...design, [field]: value });
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full animate-in fade-in duration-500">
+    // 🔥 FIX: Removed 'h-full' to prevent forced height issues
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in duration-500">
 
       {/* LEFT: Design Controls */}
-      <div className="lg:col-span-7 space-y-4 sm:space-y-6 pb-24 lg:pb-0">
+      {/* 🔥 FIX: Use full width (col-span-12) in Edit Mode, else 7 */}
+      <div className={`${isEditMode ? "lg:col-span-12" : "lg:col-span-7"} space-y-4 sm:space-y-6 ${isEditMode ? "pb-0" : "pb-24 lg:pb-0"}`}>
         
-        <div className="lg:hidden text-center pb-2">
-           <h3 className="text-lg font-semibold text-gray-900">Customize Design</h3>
-           <p className="text-sm text-gray-500">Tap sections below to edit</p>
-        </div>
+        {!isEditMode && (
+          <div className="lg:hidden text-center pb-2">
+             <h3 className="text-lg font-semibold text-gray-900">Customize Design</h3>
+             <p className="text-sm text-gray-500">Tap sections below to edit</p>
+          </div>
+        )}
 
         {/* 1. Colors */}
         <DesignSection title="Colors" icon={Palette} defaultOpen>
@@ -53,7 +57,7 @@ export default function StepDesign({ design, setDesign, content, onNext, onBack 
             <div className="space-y-2">
                <Upload className="mx-auto text-gray-400 group-hover:text-blue-500 transition-colors" size={32} />
                {design.logo ? (
-                 <p className="text-sm font-medium text-green-600 truncate px-4">{design.logo.name}</p>
+                 <p className="text-sm font-medium text-green-600 truncate px-4">{design.logo.name || "Logo Uploaded"}</p>
                ) : (
                  <>
                    <p className="text-sm font-medium text-gray-700">Upload Logo</p>
@@ -64,7 +68,7 @@ export default function StepDesign({ design, setDesign, content, onNext, onBack 
           </div>
         </DesignSection>
 
-        {/* 3. Pattern Style (Dots) */}
+        {/* 3. Pattern Style */}
         <DesignSection title="Pattern Style" icon={Grid}>
           <div className="grid grid-cols-3 gap-3">
              {["square", "rounded", "dots", "classy", "classy-rounded", "extra-rounded"].map((shape) => (
@@ -78,10 +82,9 @@ export default function StepDesign({ design, setDesign, content, onNext, onBack 
           </div>
         </DesignSection>
 
-        {/* 4. Eye Style (Fixed Options) */}
+        {/* 4. Eye Style */}
         <DesignSection title="Eye Style" icon={Eye}>
            <div className="grid grid-cols-3 gap-3">
-             {/* 🔥 FIX: Only use shapes supported by the library */}
              {["square", "dot", "extra-rounded"].map((shape) => (
                 <ShapeOption 
                    key={shape} 
@@ -93,10 +96,11 @@ export default function StepDesign({ design, setDesign, content, onNext, onBack 
           </div>
         </DesignSection>
 
-        {/* 5. Frames (Visual Wrapper) */}
+        {/* 5. Frames */}
         <DesignSection title="Frame Options" icon={Frame}>
            <div className="space-y-4">
-              <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+              {/* 🔥 FIX: Added no-scrollbar utility to prevent layout shifts */}
+              <div className="flex gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden -mx-1 px-1">
                  {["none", "classic", "rounded", "bubble", "banner"].map((style) => (
                     <button
                       key={style}
@@ -143,42 +147,46 @@ export default function StepDesign({ design, setDesign, content, onNext, onBack 
 
       </div>
 
-      {/* RIGHT: Live Preview (Sticky Desktop) */}
-      <div className="lg:col-span-5 relative hidden lg:block">
-        <div className="sticky top-8 bg-gray-50 rounded-2xl border p-8 flex flex-col items-center justify-center min-h-[500px]">
-           
-           {/* 🔥 FIX: Wrap with Frame Renderer */}
-           <FramePreview design={design}>
-              <div className="bg-white p-4 rounded-xl shadow-sm">
-                  <LiveQRCode content={content || "https://example.com"} design={design} />
-              </div>
-           </FramePreview>
-           
-           <p className="mt-8 text-sm text-gray-400 font-medium">Live Preview</p>
+      {/* RIGHT: Live Preview (ONLY in Wizard Mode) */}
+      {/* 🔥 FIX: Hidden in Edit Mode because parent handles preview */}
+      {!isEditMode && (
+        <div className="lg:col-span-5 relative hidden lg:block">
+          <div className="sticky top-8 bg-gray-50 rounded-2xl border p-8 flex flex-col items-center justify-center min-h-[500px]">
+             <FramePreview design={design}>
+                <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <LiveQRCode content={content || "https://example.com"} design={design} />
+                </div>
+             </FramePreview>
+             <p className="mt-8 text-sm text-gray-400 font-medium">Live Preview</p>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* MOBILE PREVIEW */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50 flex justify-between items-center shadow-lg">
-         <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white border rounded shadow-sm overflow-hidden flex items-center justify-center">
-               <div className="scale-[0.25]">
-                  <LiveQRCode content={content || "https://example.com"} design={design} />
-               </div>
-            </div>
-            <span className="text-sm font-semibold text-gray-800">Preview</span>
-         </div>
-         <div className="flex gap-3">
-            <button onClick={onBack} className="px-4 py-2.5 text-sm border rounded-lg font-medium">Back</button>
-            <button onClick={onNext} className="px-6 py-2.5 text-sm bg-blue-600 text-white rounded-lg font-medium shadow-sm">Next</button>
-         </div>
-      </div>
+      {/* MOBILE PREVIEW (ONLY in Wizard Mode) */}
+      {!isEditMode && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50 flex justify-between items-center shadow-lg">
+           <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white border rounded shadow-sm overflow-hidden flex items-center justify-center">
+                 <div className="scale-[0.25]">
+                    <LiveQRCode content={content || "https://example.com"} design={design} />
+                 </div>
+              </div>
+              <span className="text-sm font-semibold text-gray-800">Preview</span>
+           </div>
+           <div className="flex gap-3">
+              <button onClick={onBack} className="px-4 py-2.5 text-sm border rounded-lg font-medium">Back</button>
+              <button onClick={onNext} className="px-6 py-2.5 text-sm bg-blue-600 text-white rounded-lg font-medium shadow-sm">Next</button>
+           </div>
+        </div>
+      )}
 
-      {/* DESKTOP NAVIGATION */}
-      <div className="col-span-full hidden lg:flex justify-between pt-6 border-t mt-auto">
-        <button onClick={onBack} className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50">Back</button>
-        <button onClick={onNext} className="px-8 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 shadow-sm">Continue</button>
-      </div>
+      {/* DESKTOP NAVIGATION (ONLY in Wizard Mode) */}
+      {!isEditMode && (
+        <div className="col-span-full hidden lg:flex justify-between pt-6 border-t mt-auto">
+          <button onClick={onBack} className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50">Back</button>
+          <button onClick={onNext} className="px-8 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 shadow-sm">Continue</button>
+        </div>
+      )}
 
     </div>
   );
@@ -188,15 +196,10 @@ export default function StepDesign({ design, setDesign, content, onNext, onBack 
 // SUB-COMPONENTS
 // ----------------------------------------------------------------------
 
-// 🔥 NEW: Frame Renderer
+// Frame Renderer (Same as before, keeping it for internal use if needed in future features)
 function FramePreview({ design, children }: any) {
    const { frameStyle, frameColor, frameTextColor, frameText } = design;
-
    if (frameStyle === "none") return children;
-
-   // Common styles
-   const containerStyle = { borderColor: frameColor, backgroundColor: frameColor };
-   const textStyle = { color: frameTextColor };
 
    if (frameStyle === "classic") {
       return (
@@ -220,7 +223,7 @@ function FramePreview({ design, children }: any) {
       );
    }
 
-   // Fallback for other styles (rounded/banner)
+   // Banner / Rounded
    return (
       <div className="flex flex-col items-center gap-3 p-4 rounded-xl border-2" style={{ borderColor: frameColor, backgroundColor: "#fff" }}>
          {children}
@@ -254,25 +257,25 @@ function ColorPicker({ label, value, onChange }: any) {
       <div className="space-y-3">
          <Label className="text-xs text-gray-500 font-medium">{label}</Label>
          
-         {/* Input & Preview */}
-         <div className="flex items-center gap-3 border rounded-lg p-2 bg-white">
-            <div className="w-8 h-8 rounded-md border shadow-sm flex-shrink-0" style={{ backgroundColor: value }} />
+         <div className="flex items-center gap-3 border rounded-lg p-2 bg-white relative">
+            <div className="relative w-8 h-8 rounded-md border shadow-sm flex-shrink-0 overflow-hidden" style={{ backgroundColor: value }}>
+               <input 
+                  type="color" 
+                  value={value} 
+                  onChange={(e) => onChange(e.target.value)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+               />
+            </div>
             <Input 
                type="text" 
                value={value} 
                onChange={(e) => onChange(e.target.value)}
                className="border-none h-8 p-0 text-sm focus-visible:ring-0 uppercase font-mono w-full"
                maxLength={7}
-            />
-            <input 
-               type="color" 
-               value={value} 
-               onChange={(e) => onChange(e.target.value)}
-               className="w-8 h-8 opacity-0 absolute cursor-pointer"
+               placeholder="#000000"
             />
          </div>
 
-         {/* 🔥 FIX: Preset Swatches */}
          <div className="flex gap-2 flex-wrap">
             {PRESETS.map(c => (
                <button 
